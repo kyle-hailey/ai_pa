@@ -88,7 +88,7 @@ SELECT * FROM (
 These are the possible optimizations for the provided SQL query and their respective pros and cons. The final decision should be made based on additional factors such as your workload, data distribution, and infrastructure.
 
 
-* V2
+# V2
 
 
 Report
@@ -200,7 +200,7 @@ The best solution depends on the specific use case:
 - Using a bucketed index or modifying the table to include a bucket id in the primary key can help balance the load, but complicates queries and may require rewriting the application's SQL queries.
 
 
-### three table join
+# three table join
 
 Report
 
