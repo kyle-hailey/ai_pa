@@ -1,7 +1,7 @@
 import os
 from openai import OpenAI
 # Initialize OpenAI client with your API key
-client = OpenAI(api_key="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")  # or use os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=)  # or use os.getenv("OPENAI_API_KEY")
 
 schema = """
 CREATE TABLE hash_vs_range (
