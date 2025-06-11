@@ -1,7 +1,7 @@
 import os
 from openai import OpenAI
 # Initialize OpenAI client with your API key
-client = OpenAI(api_key="")  # or use os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=)  # or use os.getenv("OPENAI_API_KEY")
 
 schema = """
 CREATE TABLE hash_vs_range (
@@ -41,6 +41,9 @@ explain (analyze, dist) select * from hash_vs_range where id > 1 and id < 4;
 
 
 context = """
+Follow the follow the follwing format for the response and restate the intial query {query} at the beginning of the response report.
+Be sure and explain the Yugabte Partioning model at the beginning of the response report.
+
 YugabyteDB Query Optimization Context
 
 Partitioning Model:
@@ -174,6 +177,7 @@ Here is the explain plan for the query were are running:  {explain_plan}
 
 {context}
 
+Output the example SQL from customer at the beginning of report
 """
 
 response = client.chat.completions.create(
