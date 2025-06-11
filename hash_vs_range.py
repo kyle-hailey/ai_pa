@@ -43,6 +43,7 @@ explain (analyze, dist) select * from hash_vs_range where id > 1 and id < 4;
 context = """
 Follow the follow the follwing format for the response and restate the intial query {query} at the beginning of the response report.
 Be sure and explain the Yugabte Partioning model at the beginning of the response report.
+In the response report make sure to give examples of UNION ALL queries that support order by clauses
 
 YugabyteDB Query Optimization Context
 
