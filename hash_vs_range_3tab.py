@@ -125,6 +125,17 @@ Problem Detected:
 
 Explain that this query uses a range predicate and/or ORDER BY. The explain plan shows sequential scan on a hash-partitioned table without a supporting ASC index.
 
+YugabyteDB Partitioning Model:
+
+- YugabyteDB partitions tables into tablets.
+- By default, tables are HASH partitioned on primary keys for even write distribution but inefficient range access.
+- RANGE partitioning (PRIMARY KEY(field ASC)) keeps rows ordered but may create write hotspots for sequential inserts.
+
+Common query problem:
+
+- Queries using range predicates or ORDER BY on hash-partitioned tables often trigger sequential scans, even when only a small key range is needed.
+- The lack of ordered storage leads to full table scans.
+
 Proposed Solutions:
 
 Solution 1 - Add Secondary ASC Index
