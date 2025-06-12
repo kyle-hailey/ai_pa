@@ -150,7 +150,7 @@ CREATE TABLE table_v2 (
    PRIMARY KEY (id ASC)
 ) SPLIT INTO N TABLETS;
 
-This avoids full scans for range queries but may cause write hotspots. Mention that recreating large tables can be operationally difficult.
+This avoids full scans for range queries but may cause write hotspots. Recreating large tables can be operationally difficult.
 
 ---
 
@@ -242,7 +242,7 @@ Output the example SQL from customer at the beginning of report
 """
 
 response = client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-4o",
     messages=[
         {"role": "system", "content": "You are a PostgreSQL query tuning expert."},
         {"role": "user", "content": prompt}
