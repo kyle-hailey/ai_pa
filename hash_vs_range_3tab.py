@@ -88,17 +88,7 @@ The main problem occurs when:
 
 ---
 
-YugabyteDB Partitioning Model:
-
-- YugabyteDB partitions tables into tablets.
-- By default, tables are HASH partitioned on primary keys for even write distribution but inefficient range access.
-- RANGE partitioning (PRIMARY KEY(field ASC)) keeps rows ordered but may create write hotspots for sequential inserts.
-
-Common query problem:
-
-- Queries using range predicates or ORDER BY on hash-partitioned tables often trigger sequential scans, even when only a small key range is needed.
-- The lack of ordered storage leads to full table scans.
-
+format all SQL code  with ```sql notation
 
 Don't not modify "(yb_hash_code(field) % 3) ASC," in the report. Use this string exactly "(yb_hash_code(field) % 3) ASC,"
 Don't not modify "LIMIT 3 ASC," in the report. Use this string exactly "(yb_hash_code(field) % 3) ASC,"
