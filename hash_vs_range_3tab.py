@@ -99,10 +99,13 @@ Common query problem:
 - Queries using range predicates or ORDER BY on hash-partitioned tables often trigger sequential scans, even when only a small key range is needed.
 - The lack of ordered storage leads to full table scans.
 
+
 Don't not modify "(yb_hash_code(field) % 3) ASC," in the report. Use this string exactly "(yb_hash_code(field) % 3) ASC,"
 Don't not modify "LIMIT 3 ASC," in the report. Use this string exactly "(yb_hash_code(field) % 3) ASC,"
 
+Emphasize that queries using range predicates like > or <  can be run without any changes. 
 Only generate the "UNION ALL" examples for the table that is used in the  range scan or order by 
+
 Always give all 4 solutions. All 4 solutions always apply for range predicate filters
 Only give solutions for the table used in the range predicate filters or order by
 Avoid giving solutions for tables uses in equality joins and equality predicate filters
@@ -159,7 +162,10 @@ CREATE INDEX table_bucket_idx ON table_name (
   field ASC
 );
 
-Show how queries would need UNION ALL across buckets:
+
+Queries with range predicates like < and > can be run without modification.
+Queries with Order by would need to UNION ALL across buckets in order to take advantages of efficiencies with bucketid.
+
 
 SELECT * FROM (
  (SELECT * FROM table_name WHERE yb_hash_code(field) % 3 = 0 ORDER BY id ASC LIMIT 3)
@@ -187,7 +193,8 @@ CREATE TABLE table_v3 (
    PRIMARY KEY (bucketid ASC, id ASC)
 ) SPLIT INTO 3 TABLETS;
 
-Queries must be rewritten as:
+Queries with range predicates like < and > can be run without modification.
+Queries with Order by would need to UNION ALL across buckets in order to take advantages of efficiencies with bucketid.
 
  
 SELECT * FROM (

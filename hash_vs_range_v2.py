@@ -122,14 +122,15 @@ CREATE INDEX table_bucket_idx ON table_name (
 
 Show how queries would need UNION ALL across buckets:
 
-SELECT * FROM (
- (SELECT * FROM table_name WHERE yb_hash_code(field) % 3 = 0 AND field > ... AND field < ... ORDER BY field ASC)
+ELECT * FROM (
+ (SELECT * FROM table_name WHERE yb_hash_code(field) % 3 = 0 ORDER BY id ASC LIMIT 3)
  UNION ALL
- (SELECT * FROM table_name WHERE yb_hash_code(field) % 3 = 1 AND field > ... AND field < ... ORDER BY field ASC)
+ (SELECT * FROM table_name WHERE yb_hash_code(field) % 3 = 1 ORDER BY id ASC LIMIT 3)
  UNION ALL
- (SELECT * FROM table_name WHERE yb_hash_code(field) % 3 = 2 AND field > ... AND field < ... ORDER BY field ASC)
+ (SELECT * FROM table_name WHERE yb_hash_code(field) % 3 = 2 ORDER BY id ASC LIMIT 3)
 ) AS combined
-ORDER BY field ASC;
+ORDER BY field ASC LIMIT 3;
+
 
 Explain that this reduces hotspots while retaining the original table structure, but requires modifying queries for ORDER BY.
 
@@ -151,13 +152,13 @@ CREATE TABLE table_v3 (
 Queries must be rewritten as:
 
 SELECT * FROM (
- (SELECT * FROM table_v3 WHERE bucketid = 0 AND id > ... AND id < ... ORDER BY id ASC)
+ (SELECT * FROM table_v3 WHERE bucketid = 0 AND ORDER BY id ASC LIMIT 3)
  UNION ALL
- (SELECT * FROM table_v3 WHERE bucketid = 1 AND id > ... AND id < ... ORDER BY id ASC)
+ (SELECT * FROM table_v3 WHERE bucketid = 1 AND ORDER BY id ASC LIMIT 3)
  UNION ALL
- (SELECT * FROM table_v3 WHERE bucketid = 2 AND id > ... AND id < ... ORDER BY id ASC)
+ (SELECT * FROM table_v3 WHERE bucketid = 2 AND ORDER BY id ASC LIMIT 3)
 ) AS combined
-ORDER BY id ASC;
+ORDER BY id ASC LIMIT 3;
 
 Explain that this reduces hotspots but requires full table rebuild and query rewrites.
 
