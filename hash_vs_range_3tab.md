@@ -8,11 +8,11 @@ FROM customers_tmp c
 JOIN orders_tmp o ON c.id = o.customer_id
 JOIN products_tmp p ON o.id = p.id
 WHERE o.date > '2024-01-15'
-  AND p.category = 'Shoes';
+AND p.category = 'Shoes';
 ```
 Problem Detected:
 
-Explain that this query uses a range predicate and/or ORDER BY. The explain plan shows sequential scan on a hash-partitioned table without a supporting ASC index.
+This query uses a range predicate and/or ORDER BY. The explain plan shows sequential scan on a hash-partitioned table without a supporting ASC index.
 
 YugabyteDB Partitioning Model:
 
@@ -31,11 +31,11 @@ Solution 1 - Add Secondary ASC Index
 
 Propose creating an ASC index to optimize the query:
 
-```sql 
-CREATE INDEX orders_tmp_date_idx ON orders_tmp (date ASC);
+```sql
+CREATE INDEX orders_date_idx ON orders_tmp (date ASC);
 ```
 
-Explain that this allows efficient range scans. Drawbacks include write overhead and potential hotspots on monotonically increasing keys.
+This allows efficient range scans. Drawbacks include write overhead and potential hotspots on monotonically increasing keys.
 
 ---
 
@@ -43,16 +43,16 @@ Solution 2 - Repartition Table to Range Partitioning
 
 Propose recreating the table with ASC primary key to directly store data ordered by key:
 
-```sql 
+```sql
 CREATE TABLE orders_tmp_v2 (
-    id SERIAL PRIMARY KEY,
-    customer_id INT REFERENCES customers_tmp(id),
-    date DATE,
-    PRIMARY KEY (date ASC)
-) SPLIT INTO 10 TABLETS;
+   id SERIAL PRIMARY KEY,
+   customer_id INT REFERENCES customers_tmp(id),
+   date DATE,
+   PRIMARY KEY (date ASC)
+) SPLIT INTO N TABLETS;
 ```
 
-Explain that this avoids full scans for range queries but may cause write hotspots. Mention that recreating large tables can be operationally difficult.
+This avoids full scans for range queries but may cause write hotspots. Mention that recreating large tables can be operationally difficult.
 
 ---
 
@@ -72,22 +72,22 @@ Queries with Order by would need to UNION ALL across buckets in order to take ad
 
 ```sql
 SELECT * FROM (
- (SELECT * FROM orders_tmp WHERE yb_hash_code(date) % 3 = 0 ORDER BY date ASC LIMIT 3)
+ (SELECT * FROM orders_tmp WHERE yb_hash_code(date) % 3 = 0 ORDER BY id ASC LIMIT 3)
  UNION ALL
- (SELECT * FROM orders_tmp WHERE yb_hash_code(date) % 3 = 1 ORDER BY date ASC LIMIT 3)
+ (SELECT * FROM orders_tmp WHERE yb_hash_code(date) % 3 = 1 ORDER BY id ASC LIMIT 3)
  UNION ALL
- (SELECT * FROM orders_tmp WHERE yb_hash_code(date) % 3 = 2 ORDER BY date ASC LIMIT 3)
+ (SELECT * FROM orders_tmp WHERE yb_hash_code(date) % 3 = 2 ORDER BY id ASC LIMIT 3)
 ) AS combined
-ORDER BY date ASC LIMIT 3;
+ORDER BY id ASC LIMIT 3;
 ```
 
-Explain that this reduces hotspots while retaining the original table structure, but requires modifying queries for ORDER BY.
+This reduces hotspots while retaining the original table structure, but requires modifying queries for ORDER BY.
 
 ---
 
 Solution 4 - Modify Table Primary Key to Include Bucket ID
 
-Propose modifying the base table schema to include bucket_id directly in the main storage primary key:
+Propose modifying the base table schema to include bucket_id directly in the primary key:
 
 ```sql
 CREATE TABLE orders_tmp_v3 (
@@ -95,7 +95,7 @@ CREATE TABLE orders_tmp_v3 (
    customer_id INT REFERENCES customers_tmp(id),
    date DATE,
    bucketid smallint DEFAULT ((random()*10)::int % 3), 
-   PRIMARY KEY (bucketid ASC, date ASC)
+   PRIMARY KEY (bucketid ASC, id ASC)
 ) SPLIT INTO 3 TABLETS;
 ```
 
@@ -104,16 +104,16 @@ Queries with Order by would need to UNION ALL across buckets in order to take ad
 
 ```sql
 SELECT * FROM (
-   (SELECT * FROM orders_tmp_v3 WHERE bucketid = 0  ORDER BY date ASC LIMIT 3)
-   UNION ALL
-   (SELECT * FROM orders_tmp_v3 WHERE bucketid = 1 ORDER BY date ASC LIMIT 3)
-   UNION ALL
-   (SELECT * FROM orders_tmp_v3 WHERE bucketid = 2 ORDER BY date ASC LIMIT 3)
+ (SELECT * FROM orders_tmp_v3 WHERE bucketid = 0  ORDER BY id ASC LIMIT 3)
+ UNION ALL
+ (SELECT * FROM orders_tmp_v3 WHERE bucketid = 1 ORDER BY id ASC LIMIT 3)
+ UNION ALL
+ (SELECT * FROM orders_tmp_v3 WHERE bucketid = 2 ORDER BY id ASC LIMIT 3)
 ) AS combined
-ORDER BY date ASC LIMIT 3;
+ORDER BY id ASC LIMIT 3;
 ```
 
-Explain that this reduces hotspots but requires full table rebuild and query rewrites.
+This reduces hotspots but requires full table rebuild and query rewrites.
 
 ---
 

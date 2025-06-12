@@ -113,7 +113,7 @@ Your input query:
 
 Problem Detected:
 
-Explain that this query uses a range predicate and/or ORDER BY. The explain plan shows sequential scan on a hash-partitioned table without a supporting ASC index.
+This query uses a range predicate and/or ORDER BY. The explain plan shows sequential scan on a hash-partitioned table without a supporting ASC index.
 
 YugabyteDB Partitioning Model:
 
@@ -134,7 +134,7 @@ Propose creating an ASC index to optimize the query:
 
 CREATE INDEX table_field_idx ON table_name (field ASC);
 
-Explain that this allows efficient range scans. Drawbacks include write overhead and potential hotspots on monotonically increasing keys.
+This allows efficient range scans. Drawbacks include write overhead and potential hotspots on monotonically increasing keys.
 
 ---
 
@@ -150,7 +150,7 @@ CREATE TABLE table_v2 (
    PRIMARY KEY (id ASC)
 ) SPLIT INTO N TABLETS;
 
-Explain that this avoids full scans for range queries but may cause write hotspots. Mention that recreating large tables can be operationally difficult.
+This avoids full scans for range queries but may cause write hotspots. Mention that recreating large tables can be operationally difficult.
 
 ---
 
@@ -177,7 +177,7 @@ SELECT * FROM (
 ) AS combined
 ORDER BY field ASC LIMIT 3;
 
-Explain that this reduces hotspots while retaining the original table structure, but requires modifying queries for ORDER BY.
+This reduces hotspots while retaining the original table structure, but requires modifying queries for ORDER BY.
 
 ---
 
@@ -207,7 +207,7 @@ SELECT * FROM (
 ) AS combined
 ORDER BY id ASC LIMIT 3;
 
-Explain that this reduces hotspots but requires full table rebuild and query rewrites.
+This reduces hotspots but requires full table rebuild and query rewrites.
 
 ---
 
