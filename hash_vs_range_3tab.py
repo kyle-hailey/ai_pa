@@ -86,6 +86,7 @@ The main problem occurs when:
 - The explain plan shows sequential scans.
 - There is no ASC index to support the range predicate or ORDER BY.
 - If there *is* an ASC index, but a sequential scan still occurs, indicate that this suggests a problem in query planner or index usability.
+- Tell the user if the field is a primary Key that requires investigation of tablet partioning or not
 
 ---
 
@@ -106,7 +107,7 @@ Avoid giving solutions for tables uses in equality joins and equality predicate 
 
 ---
 
-You must always generate your output following this report format:
+You must always generate your output following this report in raw markdown format:
 
 ==============================
 Report
